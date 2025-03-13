@@ -1,110 +1,71 @@
 # Executive Leads Export Tool
 
-A modern web application built with Next.js that allows users to filter and export executive leads from BigQuery based on industry and company name.
+A web application for filtering and exporting executive leads from BigQuery based on industry and company name.
 
 ## Features
 
-- **Industry Filtering**: Search and select from a comprehensive list of industries using a typable dropdown
-- **Company Name Filtering**: Filter leads by company name
-- **Real-time Lead Count**: See the number of leads matching your filter criteria
-- **CSV Export**: Export filtered leads to CSV format
-- **Large Dataset Handling**: Automatically splits large exports into manageable parts
-- **Email Validation**: Only includes leads with valid email addresses
-
-## Tech Stack
-
-- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Data Source**: Google BigQuery
-- **Authentication**: Google Cloud Service Account
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 16.x or higher
-- npm or yarn
-- Google Cloud Platform account with BigQuery access
-- Service account credentials with BigQuery permissions
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/agentic-geek/leads-export-tool.git
-   cd leads-export-tool
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. Create a `.env.local` file in the root directory with the following variables:
-   ```
-   PROJECT_ID=your-gcp-project-id
-   DATASET_ID=your-bigquery-dataset-id
-   TABLE_ID=your-bigquery-table-id
-   GOOGLE_APPLICATION_CREDENTIALS=./credentials.json
-   ```
-
-4. Place your Google Cloud service account credentials in a file named `credentials.json` in the root directory.
-
-5. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
-
-## Usage
-
-1. **Select an Industry**: Use the typable dropdown to search and select an industry.
-2. **Enter a Company Name (Optional)**: Filter results further by entering a company name.
-3. **View Lead Count**: The application will display the number of leads matching your criteria.
-4. **Export to CSV**: Click the "Export to CSV" button to download the filtered leads.
-5. **Download in Parts (if applicable)**: For large datasets, download each part separately.
-
-## Data Structure
-
-The application expects the BigQuery table to have the following columns:
-- `industry`: The industry of the lead
-- `company_name`: The company name
-- `emails`: The email address of the lead (used for filtering valid leads)
-- Additional columns will be included in the export
+- Filter leads by industry and company name
+- View the count of matching leads
+- Export filtered leads to CSV
+- Support for large exports with multi-part downloads
+- Clean, modern UI with responsive design
 
 ## Deployment
 
-This application can be deployed to Render.com or any other platform that supports Next.js applications.
+### Local Development
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Create a `.env.local` file with the following variables:
+   ```
+   PROJECT_ID=your-google-cloud-project-id
+   DATASET_ID=your-bigquery-dataset-id
+   TABLE_ID=your-bigquery-table-id
+   GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
+   ```
+4. Place your Google Cloud credentials file in the project root
+5. Start the development server:
+   ```
+   npm run dev
+   ```
 
 ### Deploying to Render.com
 
-For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+**Important Note**: If you encounter the error "Module not found: Can't resolve '@/app/lib/bigquery'", it's because the path aliases aren't resolving correctly in the production environment. This has been fixed in the latest version by using relative imports instead of path aliases.
 
-Quick steps:
-1. Prepare your Google Cloud credentials for deployment:
-   ```bash
-   node deploy-prep.js
-   ```
-2. Create a new Web Service on Render.com
-3. Connect your GitHub repository
-4. Configure the environment variables
-5. Deploy the application
+Follow these steps to deploy to Render.com:
 
-## Contributing
+1. Push your code to a GitHub repository
+2. Log in to your [Render.com dashboard](https://dashboard.render.com/)
+3. Click "New" and select "Web Service"
+4. Connect your GitHub repository
+5. Configure the service:
+   - **Name**: leads-export-tool (or your preferred name)
+   - **Environment**: Node
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+6. Add the following environment variables:
+   - `NODE_ENV`: `production`
+   - `PROJECT_ID`: Your Google Cloud project ID
+   - `DATASET_ID`: Your BigQuery dataset ID
+   - `TABLE_ID`: Your BigQuery table ID
+   - `GOOGLE_APPLICATION_CREDENTIALS_JSON`: Paste the entire contents of your credentials.json file
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+7. Click "Create Web Service"
+
+For more detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## Troubleshooting
+
+If you encounter issues with the deployment:
+
+1. Check the Render logs in your dashboard
+2. Verify that all environment variables are set correctly
+3. Ensure your Google Cloud service account has the necessary permissions
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Google BigQuery](https://cloud.google.com/bigquery)
+MIT
