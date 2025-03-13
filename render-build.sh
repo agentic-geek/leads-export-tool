@@ -13,7 +13,4 @@ npm install
 # Build the application
 npm run build
 
-# Make the script executable
-chmod +x render-build.sh
-
 echo "Build completed successfully!"
