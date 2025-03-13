@@ -10,6 +10,12 @@ set -x
 # Install dependencies
 npm install
 
+# Test Google Cloud credentials (if available)
+if [ -n "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
+  echo "Testing Google Cloud credentials..."
+  npm run test-credentials
+fi
+
 # Build the application
 npm run build
 
