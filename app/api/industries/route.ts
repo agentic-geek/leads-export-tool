@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getIndustries } from '@/app/lib/bigquery';
+import { getIndustries } from '../../lib/bigquery';
 
 export async function GET() {
   console.log('Industries API called');
