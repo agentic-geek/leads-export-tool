@@ -20,7 +20,7 @@ Since Render.com doesn't support storing files directly, you'll need to convert 
 
 ### 2. Deploy to Render.com
 
-#### Option 1: Deploy via Dashboard (Easiest)
+#### Option 1: Deploy via Dashboard (Recommended)
 
 1. Log in to your [Render.com dashboard](https://dashboard.render.com/)
 2. Click "New" and select "Web Service"
@@ -28,7 +28,7 @@ Since Render.com doesn't support storing files directly, you'll need to convert 
 4. Configure the service:
    - **Name**: leads-export-tool (or your preferred name)
    - **Environment**: Node
-   - **Build Command**: `npm install && npm run build`
+   - **Build Command**: `chmod +x render-build.sh && ./render-build.sh`
    - **Start Command**: `npm start`
 5. Add the following environment variables:
    - `NODE_ENV`: `production`
@@ -48,43 +48,33 @@ Since Render.com doesn't support storing files directly, you'll need to convert 
 5. Render will detect the `render.yaml` file and configure the services
 6. You'll need to manually add the environment variables mentioned above
 
-### 3. Update Your Code for Credentials
+### 3. Troubleshooting Common Deployment Issues
 
-Since we're using an environment variable for credentials instead of a file, add this code to your `app/lib/bigquery.ts` file:
+#### Module Resolution Issues
 
-```typescript
-// Initialize BigQuery client
-let bigquery;
+If you encounter errors like "Module not found: Can't resolve '@/app/lib/bigquery'", this is due to path alias resolution issues in the production environment. We've fixed this by:
 
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-  // For production: use credentials from environment variable
-  const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-  bigquery = new BigQuery({
-    projectId: process.env.PROJECT_ID,
-    credentials,
-  });
-} else {
-  // For development: use credentials file
-  bigquery = new BigQuery({
-    projectId: process.env.PROJECT_ID,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  });
-}
-```
+1. Using relative imports instead of path aliases in API routes
+2. Setting the appropriate Next.js configuration
+
+#### Tailwind CSS Issues
+
+If you encounter errors like "Cannot find module 'tailwindcss'", this is because Tailwind CSS needs to be in the dependencies section of package.json, not devDependencies. We've fixed this by moving Tailwind CSS and related packages to the dependencies section.
+
+#### Build Failures
+
+If your build is failing with a generic error message:
+
+1. Check the Render.com logs for specific error messages
+2. Make sure all environment variables are set correctly
+3. Verify that the Node.js version is compatible (we require Node.js 18+)
+4. Try using the custom build script (`render-build.sh`) provided in the repository
 
 ### 4. Verify Deployment
 
 1. Once deployed, Render will provide you with a URL (e.g., `https://leads-export-tool.onrender.com`)
 2. Visit the URL to ensure your application is working correctly
 3. Test the industry dropdown, company name filtering, and export functionality
-
-## Troubleshooting
-
-If you encounter issues:
-
-1. Check the Render logs in your dashboard
-2. Verify that all environment variables are set correctly
-3. Ensure your Google Cloud service account has the necessary permissions
 
 ## Scaling and Paid Options
 
