@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getLeadsCount } from '@/app/lib/bigquery';
+import { getLeadsCount } from '../../lib/bigquery';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
