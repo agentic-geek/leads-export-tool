@@ -2,10 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Enable experimental features for path aliases
-  experimental: {
-    appDir: true,
-  },
+  // Output standalone build for better compatibility with Render.com
+  output: 'standalone',
 };
 
 module.exports = nextConfig;
