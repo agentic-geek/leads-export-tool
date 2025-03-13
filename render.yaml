@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: leads-export-tool
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PROJECT_ID
+        sync: false
+      - key: DATASET_ID
+        sync: false
+      - key: TABLE_ID
+        sync: false
+      - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+        sync: false
