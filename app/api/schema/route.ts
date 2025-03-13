@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getTableSchema } from '@/app/lib/bigquery';
+import { getTableSchema } from '../../lib/bigquery';
 
 export async function GET() {
   console.log('Schema API called');
