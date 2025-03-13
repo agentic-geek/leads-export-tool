@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getLeads, convertToCSV, splitLeadsIntoChunks } from '@/app/lib/bigquery';
+import { getLeads, convertToCSV, splitLeadsIntoChunks } from '../../lib/bigquery';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       return new NextResponse(csv, {
         headers: {
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="leads_${industry || 'all'}_${companyName || 'all'}_part${partIndex + 1}.csv"`,
+          'Content-Disposition': `attachment; filename=\"leads_${industry || 'all'}_${companyName || 'all'}_part${partIndex + 1}.csv\"`,
         },
       });
     }
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="leads_${industry || 'all'}_${companyName || 'all'}.csv"`,
+        'Content-Disposition': `attachment; filename=\"leads_${industry || 'all'}_${companyName || 'all'}.csv\"`,
       },
     });
   } catch (error) {
