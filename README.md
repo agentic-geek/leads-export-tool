@@ -34,7 +34,11 @@ A web application for filtering and exporting executive leads from BigQuery base
 
 ### Deploying to Render.com
 
-**Important Note**: If you encounter the error "Module not found: Can't resolve '@/app/lib/bigquery'", it's because the path aliases aren't resolving correctly in the production environment. This has been fixed in the latest version by using relative imports instead of path aliases.
+**Important Notes**: 
+
+1. If you encounter the error "Module not found: Can't resolve '@/app/lib/bigquery'", it's because the path aliases aren't resolving correctly in the production environment. This has been fixed in the latest version by using relative imports instead of path aliases.
+
+2. If you encounter the error "Cannot find module 'tailwindcss'", it's because Tailwind CSS is listed as a devDependency but not installed in production. This has been fixed in the latest version by moving Tailwind CSS and related packages to the dependencies section.
 
 Follow these steps to deploy to Render.com:
 
@@ -65,6 +69,7 @@ If you encounter issues with the deployment:
 1. Check the Render logs in your dashboard
 2. Verify that all environment variables are set correctly
 3. Ensure your Google Cloud service account has the necessary permissions
+4. Make sure all required dependencies are properly installed
 
 ## License
 
