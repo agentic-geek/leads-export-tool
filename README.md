@@ -34,42 +34,63 @@ A web application for filtering and exporting executive leads from BigQuery base
 
 ### Deploying to Render.com
 
-**Important Notes**: 
+You have two options for deploying to Render.com:
 
-1. If you encounter the error "Module not found: Can't resolve '@/app/lib/bigquery'", it's because the path aliases aren't resolving correctly in the production environment. This has been fixed in the latest version by using relative imports instead of path aliases.
+#### Option 1: Deploy with Blueprint (render.yaml)
 
-2. If you encounter the error "Cannot find module 'tailwindcss'", it's because Tailwind CSS is listed as a devDependency but not installed in production. This has been fixed in the latest version by moving Tailwind CSS and related packages to the dependencies section.
+This is the recommended approach as it automates much of the deployment process:
 
-Follow these steps to deploy to Render.com:
+1. Format your Google Cloud credentials:
+   ```
+   npm run format-credentials path/to/credentials.json
+   ```
 
-1. Push your code to a GitHub repository
-2. Log in to your [Render.com dashboard](https://dashboard.render.com/)
-3. Click "New" and select "Web Service"
-4. Connect your GitHub repository
-5. Configure the service:
-   - **Name**: leads-export-tool (or your preferred name)
-   - **Environment**: Node
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-6. Add the following environment variables:
-   - `NODE_ENV`: `production`
-   - `PROJECT_ID`: Your Google Cloud project ID
-   - `DATASET_ID`: Your BigQuery dataset ID
-   - `TABLE_ID`: Your BigQuery table ID
-   - `GOOGLE_APPLICATION_CREDENTIALS_JSON`: Paste the entire contents of your credentials.json file
+2. Deploy using Render Blueprint:
+   - Log in to Render.com
+   - Click "New" and select "Blueprint"
+   - Connect your GitHub repository
+   - Follow the prompts to complete the deployment
 
-7. Click "Create Web Service"
+For detailed instructions, see [RENDER-BLUEPRINT-GUIDE.md](RENDER-BLUEPRINT-GUIDE.md).
 
-For more detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+#### Option 2: Manual Deployment
+
+If you prefer more control over the deployment process:
+
+1. Log in to Render.com
+2. Click "New" and select "Web Service"
+3. Connect your GitHub repository
+4. Configure the service manually
+
+For detailed instructions, see [RENDER-DEPLOY-GUIDE.md](RENDER-DEPLOY-GUIDE.md).
+
+## Google Cloud Credentials
+
+To use this application, you need a Google Cloud service account with access to BigQuery. 
+
+1. Create a service account in the Google Cloud Console
+2. Grant it the "BigQuery Data Viewer" role
+3. Create and download a key file (JSON format)
+4. Use the provided script to format it for Render.com:
+   ```
+   npm run format-credentials path/to/credentials.json
+   ```
+
+See `credentials.json.example` for the expected format.
 
 ## Troubleshooting
 
-If you encounter issues with the deployment:
+If you encounter issues during deployment:
 
-1. Check the Render logs in your dashboard
-2. Verify that all environment variables are set correctly
-3. Ensure your Google Cloud service account has the necessary permissions
-4. Make sure all required dependencies are properly installed
+1. **Check the build logs** in the Render.com dashboard
+2. **Verify environment variables** are set correctly
+3. **Ensure your Google Cloud credentials** are properly formatted
+4. **Test your credentials locally** using the provided script:
+   ```
+   npm run test-credentials
+   ```
+
+For more detailed troubleshooting steps, see the deployment guides.
 
 ## License
 
