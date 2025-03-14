@@ -12,6 +12,7 @@
     "lint": "next lint",
     "test-credentials": "node scripts/test-credentials.js",
     "format-credentials": "node scripts/format-credentials.js",
+    "fix-credentials": "node scripts/fix-credentials.js",
     "troubleshoot-bigquery": "node scripts/troubleshoot-bigquery.js"
   },
   "dependencies": {
