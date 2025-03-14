@@ -14,6 +14,9 @@ npm install
 if [ -n "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
   echo "Testing Google Cloud credentials..."
   npm run test-credentials
+  
+  echo "Troubleshooting BigQuery connection..."
+  npm run troubleshoot-bigquery
 fi
 
 # Build the application
