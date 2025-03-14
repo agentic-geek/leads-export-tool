@@ -4,13 +4,25 @@ Follow these exact steps to deploy your Leads Export Tool to Render.com:
 
 ## 1. Prepare Your Google Cloud Credentials
 
-1. Open your `credentials.json` file
-2. Copy the entire contents (you'll need this for step 3)
-3. Make sure the credentials JSON is properly formatted and contains all required fields:
-   - `client_email`
-   - `private_key`
-   - `project_id`
-   - Other required fields
+The most common issue with deployment is improperly formatted Google Cloud credentials. Follow these steps carefully:
+
+1. Clone the repository to your local machine if you haven't already:
+   ```
+   git clone https://github.com/agentic-geek/leads-export-tool.git
+   cd leads-export-tool
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+
+3. Use the provided script to format your credentials properly:
+   ```
+   npm run format-credentials path/to/your/credentials.json
+   ```
+
+4. The script will output a properly formatted JSON string. Copy this entire string (it should be a single line with no line breaks).
 
 ## 2. Log in to Render.com
 
@@ -44,9 +56,9 @@ Click "Advanced" and then "Add Environment Variable" for each of these:
 2. `PROJECT_ID` = Your Google Cloud project ID
 3. `DATASET_ID` = Your BigQuery dataset ID
 4. `TABLE_ID` = Your BigQuery table ID
-5. `GOOGLE_APPLICATION_CREDENTIALS_JSON` = Paste the entire contents of your credentials.json file
+5. `GOOGLE_APPLICATION_CREDENTIALS_JSON` = Paste the entire formatted JSON string from step 1
 
-**Important**: Make sure the JSON in `GOOGLE_APPLICATION_CREDENTIALS_JSON` is properly formatted. It should be a single line with no line breaks, and all quotes should be properly escaped.
+**IMPORTANT**: Make sure the JSON in `GOOGLE_APPLICATION_CREDENTIALS_JSON` is properly formatted. It should be a single line with no line breaks, and all quotes should be properly escaped. Use the `format-credentials.js` script to ensure proper formatting.
 
 ## 6. Create Web Service
 
@@ -65,23 +77,37 @@ Click the "Create Web Service" button at the bottom of the page.
 2. Visit the URL to ensure your application is working correctly
 3. Test the industry dropdown, company name filtering, and export functionality
 
-## Troubleshooting
+## Troubleshooting Credentials Issues
 
-If you encounter any issues during deployment:
+If you see the error "Could not load the default credentials", follow these steps:
 
-1. **Check the build logs** in the "Events" tab for specific error messages
-2. **Verify environment variables** are set correctly
-3. **Test your credentials locally** before deploying:
+1. **Check your credentials format**:
+   - Make sure you used the `format-credentials.js` script to format your credentials
+   - Verify that the `GOOGLE_APPLICATION_CREDENTIALS_JSON` environment variable contains the entire JSON string
+   - Check that there are no line breaks or extra spaces in the JSON string
+
+2. **Verify required fields**:
+   - Your credentials JSON must contain `client_email` and `private_key` fields
+   - The `private_key` should start with `-----BEGIN PRIVATE KEY-----` and end with `-----END PRIVATE KEY-----`
+
+3. **Check environment variables**:
+   - Verify that `PROJECT_ID`, `DATASET_ID`, and `TABLE_ID` are set correctly
+   - These values should match your Google Cloud project configuration
+
+4. **Test locally before deploying**:
    ```
    # Set environment variables locally
    export PROJECT_ID=your-project-id
    export DATASET_ID=your-dataset-id
    export TABLE_ID=your-table-id
-   export GOOGLE_APPLICATION_CREDENTIALS_JSON='{"type":"service_account",...}'
+   export GOOGLE_APPLICATION_CREDENTIALS=path/to/your/credentials.json
    
-   # Run the test script
-   npm run test-credentials
+   # Run the application
+   npm run dev
    ```
-4. **Try redeploying** by clicking the "Manual Deploy" button and selecting "Clear build cache & deploy"
+
+5. **Check permissions**:
+   - Make sure the service account in your credentials has the necessary permissions to access BigQuery
+   - The service account should have at least the "BigQuery Data Viewer" role
 
 If you continue to experience issues, refer to the troubleshooting section in the DEPLOYMENT.md file for more detailed guidance.
