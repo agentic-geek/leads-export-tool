@@ -28,7 +28,7 @@ A web application for exporting leads data from BigQuery, with filtering capabil
 
 ### Environment Setup
 
-1. Clone the repository
+1. Clone the repository 
 2. Copy `.env.template` to `.env.local` and fill in the required values:
    ```
    PROJECT_ID=your-gcp-project-id
