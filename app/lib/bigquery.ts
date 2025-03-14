@@ -8,15 +8,20 @@ function createBigQueryOptions(projectId: string | undefined, credentials?: any,
   };
   
   if (credentials) {
-    options.credentials = credentials;
+    // Create a clean copy of credentials without any location/region fields
+    const cleanCredentials = { ...credentials };
+    
+    // Remove any fields that might cause CloudRegion parsing issues
+    delete cleanCredentials.location;
+    delete cleanCredentials.region;
+    delete cleanCredentials.locationPreference;
+    
+    options.credentials = cleanCredentials;
   }
   
   if (keyFilename) {
     options.keyFilename = keyFilename;
   }
-  
-  // Explicitly set location to null to avoid CloudRegion parsing issues
-  options.location = null;
   
   return options;
 }
@@ -36,16 +41,10 @@ try {
         console.error('Credentials JSON is missing required fields (client_email or private_key)');
       }
       
-      // Remove any location/region fields from credentials to prevent parsing issues
-      if (credentials.location) {
-        console.log('Removing location field from credentials to prevent CloudRegion parsing issues');
-        delete credentials.location;
-      }
-      
       const options = createBigQueryOptions(process.env.PROJECT_ID, credentials);
       console.log('BigQuery initialization options:', JSON.stringify({
         ...options,
-        credentials: credentials ? '**REDACTED**' : undefined
+        credentials: '**REDACTED**'
       }));
       
       bigquery = new BigQuery(options);
@@ -59,7 +58,7 @@ try {
     const options = createBigQueryOptions(process.env.PROJECT_ID, undefined, process.env.GOOGLE_APPLICATION_CREDENTIALS);
     console.log('BigQuery initialization options:', JSON.stringify({
       ...options,
-      keyFilename: options.keyFilename ? '**REDACTED**' : undefined
+      keyFilename: '**REDACTED**'
     }));
     
     bigquery = new BigQuery(options);
