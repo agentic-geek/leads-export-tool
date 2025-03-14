@@ -1,22 +1,63 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import { stringify } from 'csv-stringify/sync';
 
-// Initialize BigQuery client
+// Initialize BigQuery client with better error handling
 let bigquery: BigQuery;
 
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
-  // For production: use credentials from environment variable
-  const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-  bigquery = new BigQuery({
-    projectId: process.env.PROJECT_ID,
-    credentials,
-  });
-} else {
-  // For development: use credentials file
-  bigquery = new BigQuery({
-    projectId: process.env.PROJECT_ID,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  });
+try {
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+    // For production: use credentials from environment variable
+    console.log('Using Google Cloud credentials from environment variable');
+    try {
+      const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+      
+      // Check if credentials contain required fields
+      if (!credentials.client_email || !credentials.private_key) {
+        console.error('Credentials JSON is missing required fields (client_email or private_key)');
+      }
+      
+      bigquery = new BigQuery({
+        projectId: process.env.PROJECT_ID,
+        credentials,
+      });
+    } catch (error) {
+      console.error('Error parsing Google Cloud credentials JSON:', error);
+      throw new Error('Invalid Google Cloud credentials JSON. Please check the format.');
+    }
+  } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    // For development: use credentials file
+    console.log(`Using Google Cloud credentials from file: ${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
+    bigquery = new BigQuery({
+      projectId: process.env.PROJECT_ID,
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    });
+  } else {
+    console.error('No Google Cloud credentials provided. Please set GOOGLE_APPLICATION_CREDENTIALS_JSON or GOOGLE_APPLICATION_CREDENTIALS.');
+    throw new Error('No Google Cloud credentials provided');
+  }
+  
+  // Verify that PROJECT_ID is set
+  if (!process.env.PROJECT_ID) {
+    console.error('PROJECT_ID environment variable is not set');
+    throw new Error('PROJECT_ID environment variable is not set');
+  }
+  
+  // Verify that DATASET_ID is set
+  if (!process.env.DATASET_ID) {
+    console.error('DATASET_ID environment variable is not set');
+    throw new Error('DATASET_ID environment variable is not set');
+  }
+  
+  // Verify that TABLE_ID is set
+  if (!process.env.TABLE_ID) {
+    console.error('TABLE_ID environment variable is not set');
+    throw new Error('TABLE_ID environment variable is not set');
+  }
+} catch (error) {
+  console.error('Error initializing BigQuery client:', error);
+  // Create a dummy BigQuery instance to prevent runtime errors
+  // This will throw more specific errors when methods are called
+  bigquery = new BigQuery();
 }
 
 // Standard industry names to filter by
@@ -66,6 +107,12 @@ const standardIndustries = [
 // Get all unique industries from the table
 export async function getIndustries(): Promise<string[]> {
   try {
+    // Verify that all required environment variables are set
+    if (!process.env.PROJECT_ID || !process.env.DATASET_ID || !process.env.TABLE_ID) {
+      console.error('Missing required environment variables for BigQuery');
+      throw new Error('Missing required environment variables for BigQuery');
+    }
+
     const query = `
       SELECT DISTINCT industry 
       FROM \`${process.env.PROJECT_ID}.${process.env.DATASET_ID}.${process.env.TABLE_ID}\`
@@ -73,7 +120,9 @@ export async function getIndustries(): Promise<string[]> {
       ORDER BY industry ASC
     `;
 
+    console.log('Executing BigQuery query for industries...');
     const [rows] = await bigquery.query({ query });
+    console.log(`Retrieved ${rows.length} industries from BigQuery`);
     
     // Filter out long descriptions and non-standard industries
     const industries = rows
@@ -111,6 +160,7 @@ export async function getIndustries(): Promise<string[]> {
   } catch (error) {
     console.error('Error fetching industries:', error);
     // Return a subset of standard industries as fallback
+    console.log('Returning fallback industry list');
     return standardIndustries
       .slice(0, 30)
       .map(industry => 
@@ -123,46 +173,68 @@ export async function getIndustries(): Promise<string[]> {
 
 // Get count of leads matching the filters
 export async function getLeadsCount(industry?: string, companyName?: string): Promise<number> {
-  let query = `
-    SELECT COUNT(*) as count
-    FROM \`${process.env.PROJECT_ID}.${process.env.DATASET_ID}.${process.env.TABLE_ID}\`
-    WHERE emails IS NOT NULL AND TRIM(emails) != ''
-  `;
+  try {
+    // Verify that all required environment variables are set
+    if (!process.env.PROJECT_ID || !process.env.DATASET_ID || !process.env.TABLE_ID) {
+      console.error('Missing required environment variables for BigQuery');
+      throw new Error('Missing required environment variables for BigQuery');
+    }
 
-  if (industry) {
-    // Use LIKE instead of exact match to handle case sensitivity and partial matches
-    query += ` AND LOWER(industry) LIKE LOWER('%${industry}%')`;
+    let query = `
+      SELECT COUNT(*) as count
+      FROM \`${process.env.PROJECT_ID}.${process.env.DATASET_ID}.${process.env.TABLE_ID}\`
+      WHERE emails IS NOT NULL AND TRIM(emails) != ''
+    `;
+
+    if (industry) {
+      // Use LIKE instead of exact match to handle case sensitivity and partial matches
+      query += ` AND LOWER(industry) LIKE LOWER('%${industry}%')`;
+    }
+
+    if (companyName) {
+      // Use the correct column name 'company_name'
+      query += ` AND LOWER(company_name) LIKE LOWER('%${companyName}%')`;
+    }
+
+    const [rows] = await bigquery.query({ query });
+    return rows[0].count;
+  } catch (error) {
+    console.error('Error getting leads count:', error);
+    throw error;
   }
-
-  if (companyName) {
-    // Use the correct column name 'company_name'
-    query += ` AND LOWER(company_name) LIKE LOWER('%${companyName}%')`;
-  }
-
-  const [rows] = await bigquery.query({ query });
-  return rows[0].count;
 }
 
 // Get leads matching the filters
 export async function getLeads(industry?: string, companyName?: string): Promise<any[]> {
-  let query = `
-    SELECT *
-    FROM \`${process.env.PROJECT_ID}.${process.env.DATASET_ID}.${process.env.TABLE_ID}\`
-    WHERE emails IS NOT NULL AND TRIM(emails) != ''
-  `;
+  try {
+    // Verify that all required environment variables are set
+    if (!process.env.PROJECT_ID || !process.env.DATASET_ID || !process.env.TABLE_ID) {
+      console.error('Missing required environment variables for BigQuery');
+      throw new Error('Missing required environment variables for BigQuery');
+    }
 
-  if (industry) {
-    // Use LIKE instead of exact match to handle case sensitivity and partial matches
-    query += ` AND LOWER(industry) LIKE LOWER('%${industry}%')`;
+    let query = `
+      SELECT *
+      FROM \`${process.env.PROJECT_ID}.${process.env.DATASET_ID}.${process.env.TABLE_ID}\`
+      WHERE emails IS NOT NULL AND TRIM(emails) != ''
+    `;
+
+    if (industry) {
+      // Use LIKE instead of exact match to handle case sensitivity and partial matches
+      query += ` AND LOWER(industry) LIKE LOWER('%${industry}%')`;
+    }
+
+    if (companyName) {
+      // Use the correct column name 'company_name'
+      query += ` AND LOWER(company_name) LIKE LOWER('%${companyName}%')`;
+    }
+
+    const [rows] = await bigquery.query({ query });
+    return rows;
+  } catch (error) {
+    console.error('Error getting leads:', error);
+    throw error;
   }
-
-  if (companyName) {
-    // Use the correct column name 'company_name'
-    query += ` AND LOWER(company_name) LIKE LOWER('%${companyName}%')`;
-  }
-
-  const [rows] = await bigquery.query({ query });
-  return rows;
 }
 
 // Convert leads to CSV format
@@ -193,6 +265,12 @@ export function splitLeadsIntoChunks(leads: any[], chunkSize: number = 20000): a
 // Get table schema to debug column names
 export async function getTableSchema(): Promise<any[]> {
   try {
+    // Verify that all required environment variables are set
+    if (!process.env.PROJECT_ID || !process.env.DATASET_ID || !process.env.TABLE_ID) {
+      console.error('Missing required environment variables for BigQuery');
+      throw new Error('Missing required environment variables for BigQuery');
+    }
+
     const dataset = bigquery.dataset(process.env.DATASET_ID as string);
     const table = dataset.table(process.env.TABLE_ID as string);
     const [metadata] = await table.getMetadata();
