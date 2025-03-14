@@ -1,6 +1,26 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import { stringify } from 'csv-stringify/sync';
 
+// Helper function to create clean BigQuery options
+function createBigQueryOptions(projectId: string | undefined, credentials?: any, keyFilename?: string) {
+  const options: any = {
+    projectId
+  };
+  
+  if (credentials) {
+    options.credentials = credentials;
+  }
+  
+  if (keyFilename) {
+    options.keyFilename = keyFilename;
+  }
+  
+  // Explicitly set location to null to avoid CloudRegion parsing issues
+  options.location = null;
+  
+  return options;
+}
+
 // Initialize BigQuery client with better error handling
 let bigquery: BigQuery;
 
@@ -16,10 +36,19 @@ try {
         console.error('Credentials JSON is missing required fields (client_email or private_key)');
       }
       
-      bigquery = new BigQuery({
-        projectId: process.env.PROJECT_ID,
-        credentials,
-      });
+      // Remove any location/region fields from credentials to prevent parsing issues
+      if (credentials.location) {
+        console.log('Removing location field from credentials to prevent CloudRegion parsing issues');
+        delete credentials.location;
+      }
+      
+      const options = createBigQueryOptions(process.env.PROJECT_ID, credentials);
+      console.log('BigQuery initialization options:', JSON.stringify({
+        ...options,
+        credentials: credentials ? '**REDACTED**' : undefined
+      }));
+      
+      bigquery = new BigQuery(options);
     } catch (error) {
       console.error('Error parsing Google Cloud credentials JSON:', error);
       throw new Error('Invalid Google Cloud credentials JSON. Please check the format.');
@@ -27,10 +56,13 @@ try {
   } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     // For development: use credentials file
     console.log(`Using Google Cloud credentials from file: ${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
-    bigquery = new BigQuery({
-      projectId: process.env.PROJECT_ID,
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    });
+    const options = createBigQueryOptions(process.env.PROJECT_ID, undefined, process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    console.log('BigQuery initialization options:', JSON.stringify({
+      ...options,
+      keyFilename: options.keyFilename ? '**REDACTED**' : undefined
+    }));
+    
+    bigquery = new BigQuery(options);
   } else {
     console.error('No Google Cloud credentials provided. Please set GOOGLE_APPLICATION_CREDENTIALS_JSON or GOOGLE_APPLICATION_CREDENTIALS.');
     throw new Error('No Google Cloud credentials provided');
@@ -57,7 +89,7 @@ try {
   console.error('Error initializing BigQuery client:', error);
   // Create a dummy BigQuery instance to prevent runtime errors
   // This will throw more specific errors when methods are called
-  bigquery = new BigQuery();
+  bigquery = new BigQuery(createBigQueryOptions(process.env.PROJECT_ID));
 }
 
 // Standard industry names to filter by
