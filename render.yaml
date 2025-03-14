@@ -2,18 +2,35 @@ services:
   - type: web
     name: leads-export-tool
     env: node
+    plan: free # Specify the plan (free, starter, etc.)
     buildCommand: chmod +x render-build.sh && ./render-build.sh
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: PROJECT_ID
-        sync: false
+        # Replace with your actual project ID or set during deployment
+        value: bigquery-project-452507
+        # Or use sync: false to set it manually in the dashboard
       - key: DATASET_ID
-        sync: false
+        sync: false # This will need to be set manually in the dashboard
       - key: TABLE_ID
-        sync: false
+        sync: false # This will need to be set manually in the dashboard
       - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
-        sync: false
+        sync: false # This will need to be set manually in the dashboard
     healthCheckPath: /
     autoDeploy: true
+    # Specify Node.js version
+    runtime: node
+    nodeVersion: 18.x
+    # Configure build settings
+    buildFilter:
+      paths:
+        - package.json
+        - package-lock.json
+        - next.config.js
+        - tsconfig.json
+        - app/**/*
+        - public/**/*
+        - scripts/**/*
+        - render-build.sh
