@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
-    "test-credentials": "node scripts/test-credentials.js"
+    "test-credentials": "node scripts/test-credentials.js",
+    "format-credentials": "node scripts/format-credentials.js"
   },
   "dependencies": {
     "@google-cloud/bigquery": "^7.3.0",
